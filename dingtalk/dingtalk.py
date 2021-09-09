@@ -1,7 +1,6 @@
 import base64
 import hashlib
 import hmac
-import json
 import queue
 import re
 import time
@@ -11,8 +10,8 @@ from urllib.parse import quote_plus
 import httpx
 from requests import RequestException
 
-from dingtalk.logger import getLogger
-from .models import ActionCard, FeedLink, CardItem
+from .items import ActionCard, FeedLink, CardItem
+from .logger import getLogger
 from .utils import is_not_null_and_blank_str
 
 logger = getLogger()
@@ -22,9 +21,12 @@ class DingTalk(object):
     """
     钉钉群自定义机器人（每个机器人每分钟最多发送20条），支持文本（text）、连接（link）、markdown三种消息类型！
     """
-    # webhook = 'https://oapi.dingtalk.com/robot/send?access_token=77eb420ff2761ad516d974e1428c3e198b84faabc9c9ef8e86b2c71ac60bd0ea'
+    # __slots__ = ('text', 'image', 'markdown', 'link', 'feed', 'action')
+
     gateway = 'https://oapi.dingtalk.com/robot/send'
     headers = {'Content-Type': 'application/json; charset=utf-8'}
+    options = {}
+    webhook = ''
 
     def __init__(self, access: str = '', secret=None, pc_slide=False, fail_notice=False):
         """
@@ -34,22 +36,27 @@ class DingTalk(object):
         :param pc_slide: 消息链接打开方式，默认False为浏览器打开，设置为True时为PC端侧边栏打开
         :param fail_notice: 消息发送失败提醒，默认为False不提醒，开发者可以根据返回的消息发送结果自行判断和处理
         """
-        self.options = {'access_token': access, }
         self.queue = queue.Queue(20)  # 钉钉官方限流每分钟发送20条信息
+
         self.secret = secret
+
         self.webhook = f"https://oapi.dingtalk.com/robot/send?access_token={access}"
+        self.options = {'access_token': access, }
 
         self.fail_notice = fail_notice
         self.start_time = time.time()
         self.pc_slide = pc_slide
 
-        if self.secret is not None and self.secret.startswith('SEC'):
-            self._options()
+        # 初始化参数
+        self._initialize()
 
-    def _options(self):
+    def _initialize(self):
         """
         钉钉群自定义机器人安全设置加签时，签名中的时间戳与请求时不能超过一个小时，所以每个1小时需要更新签名
         """
+        if self.secret is None or not self.secret.startswith('SEC'):
+            return
+
         timestamp = round(self.start_time * 1000)
         string_to_sign = f'{timestamp}\n{self.secret}'
 
@@ -57,37 +64,27 @@ class DingTalk(object):
         sign = quote_plus(base64.b64encode(code))
 
         self.options.update({'timestamp': timestamp, 'sign': sign})
-        self.webhook = '{}&timestamp={}&sign={}'.format(self.webhook, str(timestamp), sign)  # 首次初始化
+        self.webhook = '{}&timestamp={}&sign={}'.format(self.webhook, str(timestamp), sign)
 
-    def msg_open_type(self, url):
+    def _open_type(self, url):
         """
         消息链接的打开方式
         1、默认或不设置时，为浏览器打开：pc_slide=False
         2、在PC端侧边栏打开：pc_slide=True
         """
-        from urllib.parse import quote_plus
+        url = quote_plus(url)
+        slide = 'true' if self.pc_slide else 'false'
+        return f'dingtalk://dingtalkclient/page/link?url={url}&pc_slide={slide}'
 
-        encode_url = quote_plus(url)
-        params = {
-            'url': encode_url,
-            'pc_slide': 'true'
-        }
-
-        if self.pc_slide:
-            final_link = 'dingtalk://dingtalkclient/page/link?url={}&pc_slide=true'.format(encode_url)
-        else:
-            final_link = 'dingtalk://dingtalkclient/page/link?url={}&pc_slide=false'.format(encode_url)
-
-        return final_link
-
-    def send_text(self, msg, is_at_all=False, at_mobiles=[], at_dingtalk_ids=[], is_auto_at=True):
+    def text(self, msg, at_all=False, at: list = None, at_ids: list = None, auto_at=True):
         """
         text类型
+        :type at_ids: object
         :param msg: 消息内容
-        :param is_at_all: @所有人时：true，否则为false（可选）
-        :param at_mobiles: 被@人的手机号（注意：可以在msg内容里自定义@手机号的位置，也支持同时@多个手机号，可选）
-        :param at_dingtalk_ids: 被@人的dingtalkId（可选）
-        :param is_auto_at: 是否自动在msg内容末尾添加@手机号，默认自动添加，可设置为False取消（可选）
+        :param at_all: @所有人时：true，否则为false（可选）
+        :param at: 被@人的手机号（注意：可以在msg内容里自定义@手机号的位置，也支持同时@多个手机号，可选）
+        :param at_ids: 被@人的dingtalkId（可选）
+        :param auto_at: 是否自动在msg内容末尾添加@手机号，默认自动添加，可设置为False取消（可选）
         :return: 返回消息发送结果
         """
         data = {"msgtype": "text", "at": {}}
@@ -98,45 +95,40 @@ class DingTalk(object):
             logger.error("text类型，消息内容不能为空！")
             raise ValueError("text类型，消息内容不能为空！")
 
-        if is_at_all:
-            data["at"]["isAtAll"] = is_at_all
+        if at_all:
+            data["at"]["isAtAll"] = at_all
 
-        if at_mobiles:
-            at_mobiles = list(map(str, at_mobiles))
-            data["at"]["atMobiles"] = at_mobiles
+        if at:
+            at = list(map(str, at))
+            data["at"]["atMobiles"] = at
 
-            if is_auto_at:
-                mobiles_text = '\n@' + '@'.join(at_mobiles)
+            if auto_at:
+                mobiles_text = '\n@' + '@'.join(at)
                 data["text"]["content"] = msg + mobiles_text
 
-        if at_dingtalk_ids:
-            at_dingtalk_ids = list(map(str, at_dingtalk_ids))
-            data["at"]["atDingtalkIds"] = at_dingtalk_ids
+        if at_ids:
+            at_ids = list(map(str, at_ids))
+            data["at"]["atDingtalkIds"] = at_ids
 
         logger.debug(f'text类型：{data}')
 
-        return self.request(data)
+        return self._request(data)
 
-    def send_image(self, pic_url):
+    def image(self, pic_url):
         """
         image类型（表情）
         :param pic_url: 图片链接
         :return: 返回消息发送结果
         """
         if is_not_null_and_blank_str(pic_url):
-            data = {
-                "msgtype": "image",
-                "image": {
-                    "picURL": pic_url
-                }
-            }
+            data = {"msgtype": "image", "image": {"picURL": pic_url}}
             logger.debug('image类型：%s' % data)
-            return self.request(data)
-        else:
-            logger.error("image类型中图片链接不能为空！")
-            raise ValueError("image类型中图片链接不能为空！")
+            return self._request(data)
 
-    def send_link(self, title, text, message_url, pic_url=''):
+        logger.error("image类型中图片链接不能为空！")
+        raise ValueError("image类型中图片链接不能为空！")
+
+    def link(self, title, text, message_url, pic_url=''):
         """
         link类型
         :param title: 消息标题
@@ -153,17 +145,17 @@ class DingTalk(object):
                     "text": text,
                     "title": title,
                     "picUrl": pic_url,
-                    "messageUrl": self.msg_open_type(message_url)
+                    "messageUrl": self._open_type(message_url)
                 }
             }
 
             logger.debug('link类型：%s' % data)
-            return self.request(data)
-        else:
-            logger.error("link类型中消息标题或内容或链接不能为空！")
-            raise ValueError("link类型中消息标题或内容或链接不能为空！")
+            return self._request(data)
 
-    def send_markdown(self, title, text, is_at_all=False, at_mobiles=None, at_dingtalk_ids=None, is_auto_at=True):
+        logger.error("link类型中消息标题或内容或链接不能为空！")
+        raise ValueError("link类型中消息标题或内容或链接不能为空！")
+
+    def markdown(self, title, text, is_at_all=False, at_mobiles=None, at_dingtalk_ids=None, is_auto_at=True):
         """
         markdown类型
         :param title: 首屏会话透出的展示内容
@@ -176,11 +168,13 @@ class DingTalk(object):
         """
         if at_mobiles is None:
             at_mobiles = []
+
         if at_dingtalk_ids is None:
             at_dingtalk_ids = []
+
         if all(map(is_not_null_and_blank_str, [title, text])):
             # 给Mardown文本消息中的跳转链接添加上跳转方式
-            text = re.sub(r'(?<!!)\[.*?\]\((.*?)\)', lambda m: m.group(0).replace(m.group(1), self.msg_open_type(m.group(1))), text)
+            text = re.sub(r'(?<!!)\[.*?\]\((.*?)\)', lambda m: m.group(0).replace(m.group(1), self._open_type(m.group(1))), text)
             data = {
                 "msgtype": "markdown",
                 "markdown": {
@@ -189,12 +183,14 @@ class DingTalk(object):
                 },
                 "at": {}
             }
+
             if is_at_all:
                 data["at"]["isAtAll"] = is_at_all
 
             if at_mobiles:
                 at_mobiles = list(map(str, at_mobiles))
                 data["at"]["atMobiles"] = at_mobiles
+
                 if is_auto_at:
                     mobiles_text = '\n@' + '@'.join(at_mobiles)
                     data["markdown"]["text"] = text + mobiles_text
@@ -204,12 +200,12 @@ class DingTalk(object):
                 data["at"]["atDingtalkIds"] = at_dingtalk_ids
 
             logger.debug("markdown类型：%s" % data)
-            return self.request(data)
-        else:
-            logger.error("markdown类型中消息标题或内容不能为空！")
-            raise ValueError("markdown类型中消息标题或内容不能为空！")
+            return self._request(data)
 
-    def send_action_card(self, action_card):
+        logger.error("markdown类型中消息标题或内容不能为空！")
+        raise ValueError("markdown类型中消息标题或内容不能为空！")
+
+    def action(self, action_card):
         """
         ActionCard类型
         :param action_card: 整体跳转ActionCard类型实例或独立跳转ActionCard类型实例
@@ -219,18 +215,18 @@ class DingTalk(object):
             data = action_card.get_data()
 
             if "singleURL" in data["actionCard"]:
-                data["actionCard"]["singleURL"] = self.msg_open_type(data["actionCard"]["singleURL"])
+                data["actionCard"]["singleURL"] = self._open_type(data["actionCard"]["singleURL"])
             elif "btns" in data["actionCard"]:
                 for btn in data["actionCard"]["btns"]:
-                    btn["actionURL"] = self.msg_open_type(btn["actionURL"])
+                    btn["actionURL"] = self._open_type(btn["actionURL"])
 
             logger.debug("ActionCard类型：%s" % data)
-            return self.request(data)
-        else:
-            logger.error("ActionCard类型：传入的实例类型不正确，内容为：{}".format(str(action_card)))
-            raise TypeError("ActionCard类型：传入的实例类型不正确，内容为：{}".format(str(action_card)))
+            return self._request(data)
 
-    def send_feed_card(self, links):
+        logger.error("ActionCard类型：传入的实例类型不正确，内容为：{}".format(str(action_card)))
+        raise TypeError("ActionCard类型：传入的实例类型不正确，内容为：{}".format(str(action_card)))
+
+    def feed(self, links):
         """
         FeedCard类型
         :param links: FeedLink实例列表 or CardItem实例列表
@@ -241,11 +237,12 @@ class DingTalk(object):
             raise ValueError("FeedLink类型：传入的数据格式不正确，内容为：{}".format(str(links)))
 
         link_list = []
+
         for link in links:
             # 兼容：1、传入FeedLink实例列表；2、CardItem实例列表；
             if isinstance(link, FeedLink) or isinstance(link, CardItem):
                 link = link.get_data()
-                link['messageURL'] = self.msg_open_type(link['messageURL'])
+                link['messageURL'] = self._open_type(link['messageURL'])
                 link_list.append(link)
             else:
                 logger.error("FeedLink类型，传入的数据格式不正确，内容为：{}".format(str(link)))
@@ -253,9 +250,10 @@ class DingTalk(object):
 
         data = {"msgtype": "feedCard", "feedCard": {"links": link_list}}
         logger.debug("FeedCard类型：%s" % data)
-        return self.request(data)
 
-    def request(self, data):
+        return self._request(data)
+
+    def _request(self, data: dict) -> dict:
         """
         发送消息（内容UTF-8编码）
         :param data: 消息数据（字典）
@@ -263,12 +261,10 @@ class DingTalk(object):
         """
         now = time.time()
 
-        # requests.post(url='', params={})
-
         # 钉钉自定义机器人安全设置加签时，签名中的时间戳与请求时不能超过一个小时，所以每个1小时需要更新签名
         if now - self.start_time >= 3600 and self.secret is not None and self.secret.startswith('SEC'):
             self.start_time = now
-            self._options()
+            self._initialize()
 
         # 钉钉自定义机器人现在每分钟最多发送20条消息
         self.queue.put(now)
@@ -281,7 +277,7 @@ class DingTalk(object):
                 time.sleep(sleep_time)
 
         try:
-            response = httpx.post(self.gateway, headers=self.headers, json=data, params=self.options)
+            response = httpx.post(self.webhook, headers=self.headers, json=data, params=self.options)
         except httpx.HTTPError as exc:
             logger.error("消息发送失败， HTTP error: %d, reason: %s" % (exc.response.status_code, exc.response.reason))
             raise
@@ -315,17 +311,18 @@ class DingTalk(object):
                             "isAtAll": False
                         }
                     }
-                    logger.error("消息发送失败，自动通知：%s" % error_data)
-                    httpx.post(self.webhook, headers=self.headers, data=json.dumps(error_data))
+
+                    logger.error(f"消息发送失败，自动通知：{error_data}")
+                    httpx.post(self.webhook, headers=self.headers, json=error_data, params=self.options)
+
                 return result
 
-    def send(self, action='text', *args, **kwargs):
+    def send(self, action='text', **kwargs):
         """
         发送消息
 
         :param action:
-        :param args:
         :param kwargs:
         :return:
         """
-        return getattr(self, f'send_{action}')(**kwargs)
+        return getattr(self, action)(**kwargs)

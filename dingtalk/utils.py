@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-# @Author  : BoPo
-# @Time    : 2021/9/8 10:24
-# @Function:
 def is_not_null_and_blank_str(content):
     """
     非空字符串
@@ -19,5 +15,5 @@ def is_not_null_and_blank_str(content):
     """
     if content and content.strip():
         return True
-    else:
-        return False
+
+    return False

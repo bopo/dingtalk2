@@ -1,0 +1,6 @@
+class DingTalkException(Exception):
+    ...
+
+
+class ValidateException(DingTalkException):
+    ...
