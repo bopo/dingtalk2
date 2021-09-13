@@ -1,7 +1,9 @@
-from .logger import getLogger
-from .utils import is_not_null_and_blank_str
+from dingtalk.logger import getLogger
+from dingtalk.utils import is_not_null_and_blank_str
 
 logger = getLogger()
+
+__all__ = ('ActionCard', 'FeedLink', 'CardItem')
 
 
 class ActionCard(object):
@@ -23,16 +25,10 @@ class ActionCard(object):
         self.btn_orientation = btn_orientation
         self.hide_avatar = hide_avatar
 
-        btn_list = []
+        btn_list = [btn.get_data() for btn in btns if isinstance(btn, CardItem)]
 
-        for btn in btns:
-            if isinstance(btn, CardItem):
-                btn_list.append(btn.get_data())
-
-        if btn_list:
-            btns = btn_list  # 兼容：1、传入CardItem示例列表；2、传入数据字典列表
-
-        self.btns = btns
+        # 兼容：1、传入CardItem示例列表；2、传入数据字典列表
+        self.btns = btn_list if btn_list else btns
 
     def get_data(self):
         """
@@ -67,9 +63,9 @@ class ActionCard(object):
                     }
                 }
                 return data
-        else:
-            logger.error("ActionCard类型，消息标题或内容或按钮数量不能为空！")
-            raise ValueError("ActionCard类型，消息标题或内容或按钮数量不能为空！")
+
+        logger.error("ActionCard类型，消息标题或内容或按钮数量不能为空！")
+        raise ValueError("ActionCard类型，消息标题或内容或按钮数量不能为空！")
 
 
 class FeedLink(object):
@@ -101,9 +97,9 @@ class FeedLink(object):
                 "picURL": self.pic_url
             }
             return data
-        else:
-            logger.error("FeedCard类型单条消息文本、消息链接、图片链接不能为空！")
-            raise ValueError("FeedCard类型单条消息文本、消息链接、图片链接不能为空！")
+
+        logger.error("FeedCard类型单条消息文本、消息链接、图片链接不能为空！")
+        raise ValueError("FeedCard类型单条消息文本、消息链接、图片链接不能为空！")
 
 
 class CardItem(object):
@@ -122,8 +118,8 @@ class CardItem(object):
         @param url: 点击子控件时触发的URL
         @param pic_url: FeedCard的图片地址，ActionCard时不需要，故默认为None
         """
-        self.title = title
         self.url = url
+        self.title = title
         self.pic_url = pic_url
 
     def get_data(self):
@@ -135,17 +131,19 @@ class CardItem(object):
             # FeedCard类型
             data = {
                 "title": self.title,
+                "picURL": self.pic_url,
                 "messageURL": self.url,
-                "picURL": self.pic_url
             }
+
             return data
         elif all(map(is_not_null_and_blank_str, [self.title, self.url])):
             # ActionCard类型
             data = {
                 "title": self.title,
-                "actionURL": self.url
+                "actionURL": self.url,
             }
+
             return data
-        else:
-            logger.error("CardItem是ActionCard的子控件时，title、url不能为空；是FeedCard的子控件时，title、url、pic_url不能为空！")
-            raise ValueError("CardItem是ActionCard的子控件时，title、url不能为空；是FeedCard的子控件时，title、url、pic_url不能为空！")
+
+        logger.error("CardItem是ActionCard的子控件时，title、url不能为空；是FeedCard的子控件时，title、url、pic_url不能为空！")
+        raise ValueError("CardItem是ActionCard的子控件时，title、url不能为空；是FeedCard的子控件时，title、url、pic_url不能为空！")

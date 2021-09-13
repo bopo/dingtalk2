@@ -4,15 +4,12 @@ import hmac
 import queue
 import re
 import time
-from json import JSONDecodeError
 from urllib.parse import quote_plus
 
-import httpx
-from requests import RequestException
-
-from .items import ActionCard, FeedLink, CardItem
-from .logger import getLogger
-from .utils import is_not_null_and_blank_str
+from dingtalk.items import ActionCard, FeedLink, CardItem
+from dingtalk.logger import getLogger
+from dingtalk.request import Request
+from dingtalk.utils import is_not_null_and_blank_str
 
 logger = getLogger()
 
@@ -21,12 +18,12 @@ class DingTalk(object):
     """
     钉钉群自定义机器人（每个机器人每分钟最多发送20条），支持文本（text）、连接（link）、markdown三种消息类型！
     """
-    # __slots__ = ('text', 'image', 'markdown', 'link', 'feed', 'action')
 
     gateway = 'https://oapi.dingtalk.com/robot/send'
     headers = {'Content-Type': 'application/json; charset=utf-8'}
     options = {}
     webhook = ''
+    session: Request
 
     def __init__(self, access: str = '', secret=None, pc_slide=False, fail_notice=False):
         """
@@ -36,8 +33,8 @@ class DingTalk(object):
         :param pc_slide: 消息链接打开方式，默认False为浏览器打开，设置为True时为PC端侧边栏打开
         :param fail_notice: 消息发送失败提醒，默认为False不提醒，开发者可以根据返回的消息发送结果自行判断和处理
         """
-        self.queue = queue.Queue(20)  # 钉钉官方限流每分钟发送20条信息
 
+        self.queue = queue.Queue(20)  # 钉钉官方限流每分钟发送20条信息
         self.secret = secret
 
         self.webhook = f"https://oapi.dingtalk.com/robot/send?access_token={access}"
@@ -51,34 +48,29 @@ class DingTalk(object):
         self._initialize()
 
     def _initialize(self):
-        """
-        钉钉群自定义机器人安全设置加签时，签名中的时间戳与请求时不能超过一个小时，所以每个1小时需要更新签名
-        """
-        if self.secret is None or not self.secret.startswith('SEC'):
-            return
+        """ 钉钉群自定义机器人安全设置加签时，签名中的时间戳与请求时不能超过一个小时，所以每个1小时需要更新签名 """
+        if self.secret and self.secret.startswith('SEC'):
+            timestamp = round(self.start_time * 1000)
+            string_to_sign = f'{timestamp}\n{self.secret}'
 
-        timestamp = round(self.start_time * 1000)
-        string_to_sign = f'{timestamp}\n{self.secret}'
+            code = hmac.new(self.secret.encode(), string_to_sign.encode(), digestmod=hashlib.sha256).digest()
+            sign = quote_plus(base64.b64encode(code))
 
-        code = hmac.new(self.secret.encode(), string_to_sign.encode(), digestmod=hashlib.sha256).digest()
-        sign = quote_plus(base64.b64encode(code))
+            self.options.update({'timestamp': timestamp, 'sign': sign})
 
-        self.options.update({'timestamp': timestamp, 'sign': sign})
-        self.webhook = '{}&timestamp={}&sign={}'.format(self.webhook, str(timestamp), sign)
+        self.session = Request(webhook=self.gateway, headers=self.headers, options=self.options)
 
     def _open_type(self, url):
-        """
-        消息链接的打开方式
+        """ 消息链接的打开方式
         1、默认或不设置时，为浏览器打开：pc_slide=False
         2、在PC端侧边栏打开：pc_slide=True
         """
-        url = quote_plus(url)
         slide = 'true' if self.pc_slide else 'false'
-        return f'dingtalk://dingtalkclient/page/link?url={url}&pc_slide={slide}'
+
+        return f'dingtalk://dingtalkclient/page/link?url={quote_plus(url)}&pc_slide={slide}'
 
     def text(self, msg, at_all=False, at: list = None, at_ids: list = None, auto_at=True):
-        """
-        text类型
+        """ text类型
         :type at_ids: object
         :param msg: 消息内容
         :param at_all: @所有人时：true，否则为false（可选）
@@ -115,8 +107,7 @@ class DingTalk(object):
         return self._request(data)
 
     def image(self, pic_url):
-        """
-        image类型（表情）
+        """ image类型（表情）
         :param pic_url: 图片链接
         :return: 返回消息发送结果
         """
@@ -129,8 +120,7 @@ class DingTalk(object):
         raise ValueError("image类型中图片链接不能为空！")
 
     def link(self, title, text, message_url, pic_url=''):
-        """
-        link类型
+        """ link类型
         :param title: 消息标题
         :param text: 消息内容（如果太长自动省略显示）
         :param message_url: 点击消息触发的URL
@@ -156,8 +146,7 @@ class DingTalk(object):
         raise ValueError("link类型中消息标题或内容或链接不能为空！")
 
     def markdown(self, title, text, is_at_all=False, at_mobiles=None, at_dingtalk_ids=None, is_auto_at=True):
-        """
-        markdown类型
+        """ markdown类型
         :param title: 首屏会话透出的展示内容
         :param text: markdown格式的消息内容
         :param is_at_all: @所有人时：true，否则为：false（可选）
@@ -173,16 +162,9 @@ class DingTalk(object):
             at_dingtalk_ids = []
 
         if all(map(is_not_null_and_blank_str, [title, text])):
-            # 给Mardown文本消息中的跳转链接添加上跳转方式
+            # 给 Markdown 文本消息中的跳转链接添加上跳转方式
             text = re.sub(r'(?<!!)\[.*?\]\((.*?)\)', lambda m: m.group(0).replace(m.group(1), self._open_type(m.group(1))), text)
-            data = {
-                "msgtype": "markdown",
-                "markdown": {
-                    "title": title,
-                    "text": text
-                },
-                "at": {}
-            }
+            data = {"msgtype": "markdown", "markdown": {"title": title, "text": text}, "at": {}}
 
             if is_at_all:
                 data["at"]["isAtAll"] = is_at_all
@@ -206,8 +188,7 @@ class DingTalk(object):
         raise ValueError("markdown类型中消息标题或内容不能为空！")
 
     def action(self, action_card):
-        """
-        ActionCard类型
+        """ ActionCard类型
         :param action_card: 整体跳转ActionCard类型实例或独立跳转ActionCard类型实例
         :return: 返回消息发送结果
         """
@@ -227,8 +208,7 @@ class DingTalk(object):
         raise TypeError("ActionCard类型：传入的实例类型不正确，内容为：{}".format(str(action_card)))
 
     def feed(self, links):
-        """
-        FeedCard类型
+        """ FeedCard类型
         :param links: FeedLink实例列表 or CardItem实例列表
         :return: 返回消息发送结果
         """
@@ -254,8 +234,7 @@ class DingTalk(object):
         return self._request(data)
 
     def _request(self, data: dict) -> dict:
-        """
-        发送消息（内容UTF-8编码）
+        """ 发送消息（内容UTF-8编码）
         :param data: 消息数据（字典）
         :return: 返回消息发送结果
         """
@@ -276,46 +255,9 @@ class DingTalk(object):
                 logger.debug('钉钉官方限制机器人每分钟最多发送20条，当前发送频率已达限制条件，休眠 {}s'.format(str(sleep_time)))
                 time.sleep(sleep_time)
 
-        try:
-            response = httpx.post(self.webhook, headers=self.headers, json=data, params=self.options)
-        except httpx.HTTPError as exc:
-            logger.error("消息发送失败， HTTP error: %d, reason: %s" % (exc.response.status_code, exc.response.reason))
-            raise
-        except ConnectionError:
-            logger.error("消息发送失败，HTTP connection error!")
-            raise
-        except httpx.Timeout:
-            logger.error("消息发送失败，Timeout error!")
-            raise
-        except RequestException:
-            logger.error("消息发送失败, Request Exception!")
-            raise
-        else:
-            try:
-                result = response.json()
-            except JSONDecodeError:
-                logger.error("服务器响应异常，状态码：%s，响应内容：%s" % (response.status_code, response.text))
-                return {'errcode': 500, 'errmsg': '服务器响应异常'}
-            else:
-                logger.debug('发送结果：%s' % result)
-                # 消息发送失败提醒（errcode 不为 0，表示消息发送异常），默认不提醒，开发者可以根据返回的消息发送结果自行判断和处理
-                if self.fail_notice and result.get('errcode', True):
-                    time_now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
-                    error_data = {
-                        "msgtype": "text",
-                        "text": {
-                            "content": "[注意-自动通知]钉钉机器人消息发送失败，时间：%s，原因：%s，请及时跟进，谢谢!" % (
-                                time_now, result['errmsg'] if result.get('errmsg', False) else '未知异常')
-                        },
-                        "at": {
-                            "isAtAll": False
-                        }
-                    }
+        logger.debug(data)
 
-                    logger.error(f"消息发送失败，自动通知：{error_data}")
-                    httpx.post(self.webhook, headers=self.headers, json=error_data, params=self.options)
-
-                return result
+        return self.session.post(data)
 
     def send(self, action='text', **kwargs):
         """
