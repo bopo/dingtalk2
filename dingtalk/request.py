@@ -10,27 +10,34 @@ class Request:
         self.session = httpx.Client()
 
     def get(self, payloads=None):
-        self.request(method='GET', data=payloads)
+        return self.request(method='GET', data=payloads)
 
     def post(self, payloads):
-        self.request(method='POST', data=payloads)
+        return self.request(method='POST', data=payloads)
 
+    @logger.catch()
     def request(self, method='GET', data: dict = None):
+
+        logger.warning(self.webhook)
+
         try:
             response = self.session.request(method=method, url=self.webhook, headers=self.headers, json=data, params=self.options)
             response.raise_for_status()
-            return self._success(response)
+            logger.warning(response.json())
+            return response.json()
         except httpx.HTTPStatusError as exc:
             print(f"Error response {exc.response.status_code} while requesting {exc.request.url!r}.")
             logger.error("消息发送失败， HTTP error: %d, reason: %s" % (exc.response.status_code, exc))
+            return exc.response.json()
         except httpx.RequestError as exc:
             print(f"An error occurred while requesting {exc.request.url!r}.")
+            return None
         except httpx.ConnectError as exc:
             logger.error("消息发送失败，HTTP connection error!")
-            raise
+            return None
         except httpx.Timeout:
             logger.error("消息发送失败，Timeout error!")
-            raise
+            return None
 
     @staticmethod
     def _success(response):

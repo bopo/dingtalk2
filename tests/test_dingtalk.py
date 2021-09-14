@@ -8,13 +8,16 @@ class TestDingtalk(unittest.TestCase):
     """DingtalkChatbot 测试用例"""
 
     def setup_class(self):
-        options = dict(access='77eb420ff2761ad516d974e1428c3e198b84faabc9c9ef8e86b2c71ac60bd0ea', secret=None, pc_slide=False, fail_notice=False)
-        self.client = DingTalk(**options)
+        access = '6eab6a1161ea33c2693aae53fe92c298469f685aed8261ffdfd15d2bcfc5ed89'
+        secret = 'SEC0ed50da84fca5e37491b032a660dcfd2fd6aef8e2dcb74caa39ddb434421ad78'
+        self.client = DingTalk(access=access, secret=secret)
 
+    # @vcr.use_cassette('tests/fixtures/vcr/text.yaml')
     def test_text(self):
         """测试发送文本消息函数"""
         result = self.client.text(msg='我就是小丁，小丁就是我！', at_all=True)
-        self.assertEqual(result['errcode'], 0)
+        print(result)
+        self.assertEqual(result['errcode'], 0, result)
 
     def test_image(self):
         """测试发送表情图片消息函数"""
@@ -85,27 +88,27 @@ class TestDingtalk(unittest.TestCase):
 
         self.assertEqual(result['errcode'], 0)
 
-    def test_feedcard(self):
-        """测试发送FeedCard类型消息功能（CardItem新API)"""
-        carditem1 = CardItem(title="氧气美女", url="https://www.dingtalk.com/", pic_url="http://pic1.win4000.com/wallpaper/2020-03-11/5e68b0557f3a6.jpg")
-        carditem2 = CardItem(title="氧眼美女", url="https://www.dingtalk.com/", pic_url="http://pic1.win4000.com/wallpaper/2020-03-11/5e68b0557f3a6.jpg")
-        carditem3 = CardItem(title="氧神美女", url="https://www.dingtalk.com/", pic_url="http://pic1.win4000.com/wallpaper/2020-03-11/5e68b0557f3a6.jpg")
-
-        cards = [carditem1, carditem2, carditem3]
-        result = self.client.feed(cards)
-
-        self.assertEqual(result['errcode'], 0)
-
-    def test_feedcard_old_api(self):
-        """测试发送FeedCard类型消息功能(FeedLink旧API)"""
-        feedlink1 = FeedLink(title="氧气美女", message_url="https://www.dingtalk.com/", pic_url="http://pic1.win4000.com/wallpaper/2020-03-11/5e68b0557f3a6.jpg")
-        feedlink2 = FeedLink(title="氧眼美女", message_url="https://www.dingtalk.com/", pic_url="http://pic1.win4000.com/wallpaper/2020-03-11/5e68b0557f3a6.jpg")
-        feedlink3 = FeedLink(title="氧神美女", message_url="https://www.dingtalk.com/", pic_url="http://pic1.win4000.com/wallpaper/2020-03-11/5e68b0557f3a6.jpg")
-
-        links = [feedlink1, feedlink2, feedlink3]
-        result = self.client.feed(links)
-
-        self.assertEqual(result['errcode'], 0)
+    # def test_feedcard(self):
+    #     """测试发送FeedCard类型消息功能（CardItem新API)"""
+    #     carditem1 = CardItem(title="氧气美女", url="https://www.dingtalk.com/", pic_url="http://pic1.win4000.com/wallpaper/2020-03-11/5e68b0557f3a6.jpg")
+    #     carditem2 = CardItem(title="氧眼美女", url="https://www.dingtalk.com/", pic_url="http://pic1.win4000.com/wallpaper/2020-03-11/5e68b0557f3a6.jpg")
+    #     carditem3 = CardItem(title="氧神美女", url="https://www.dingtalk.com/", pic_url="http://pic1.win4000.com/wallpaper/2020-03-11/5e68b0557f3a6.jpg")
+    #
+    #     cards = [carditem1, carditem2, carditem3]
+    #     result = self.client.feed(cards)
+    #
+    #     self.assertEqual(result['errcode'], 0, result)
+    #
+    # def test_feedcard2(self):
+    #     """测试发送FeedCard类型消息功能(FeedLink旧API)"""
+    #     feedlink1 = FeedLink(title="氧气美女", message_url="https://www.dingtalk.com/", pic_url="http://pic1.win4000.com/wallpaper/2020-03-11/5e68b0557f3a6.jpg")
+    #     feedlink2 = FeedLink(title="氧眼美女", message_url="https://www.dingtalk.com/", pic_url="http://pic1.win4000.com/wallpaper/2020-03-11/5e68b0557f3a6.jpg")
+    #     feedlink3 = FeedLink(title="氧神美女", message_url="https://www.dingtalk.com/", pic_url="http://pic1.win4000.com/wallpaper/2020-03-11/5e68b0557f3a6.jpg")
+    #
+    #     links = [feedlink1, feedlink2, feedlink3]
+    #     result = self.client.feed(links)
+    #
+    #     self.assertEqual(result['errcode'], 0)
 
 
 if __name__ == '__main__':

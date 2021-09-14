@@ -3,8 +3,6 @@ from dingtalk.utils import is_not_null_and_blank_str
 
 logger = getLogger()
 
-__all__ = ('ActionCard', 'FeedLink', 'CardItem')
-
 
 class ActionCard(object):
     """
@@ -147,3 +145,6 @@ class CardItem(object):
 
         logger.error("CardItem是ActionCard的子控件时，title、url不能为空；是FeedCard的子控件时，title、url、pic_url不能为空！")
         raise ValueError("CardItem是ActionCard的子控件时，title、url不能为空；是FeedCard的子控件时，title、url、pic_url不能为空！")
+
+
+__all__ = ('ActionCard', 'FeedLink', 'CardItem')
