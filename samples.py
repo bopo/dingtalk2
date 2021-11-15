@@ -2,13 +2,19 @@
 # _*_ coding:utf-8 _*_
 # create time: 15/01/2018 17:08
 __author__ = 'Devin -- http://zhangchuzhao.site'
-import json
+
 import logging
-import requests
-from dingtalkchatbot.chatbot import DingtalkChatbot, ActionCard, FeedLink, CardItem
+
+from dingtalkchatbot.chatbot import DingtalkChatbot, ActionCard, CardItem
+
+from dingtalk.dingtalk import DingTalk
 
 logging.basicConfig(level=logging.ERROR)
 
+access = '6eab6a1161ea33c2693aae53fe92c298469f685aed8261ffdfd15d2bcfc5ed89'
+secret = '0ed50da84fca5e37491b032a660dcfd2fd6aef8e2dcb74caa39ddb434421ad78'
+client = DingTalk(access=access, secret=secret, pc_slide=False, fail_notice=False)
+result = client.text(**dict(at_all=True, msg='哈哈'))
 
 # def mini_sample():
 #     webhook = 'https://oapi.dingtalk.com/robot/send?access_token=这里填写自己钉钉群自定义机器人的token'
@@ -37,15 +43,15 @@ if __name__ == '__main__':
     secret = 'SEC11b94b27f5953b94deee33840d2863ebfbe7c75b68848613cdbd80228752d63b'  # 创建机器人时钉钉设置页面有提供
     # 用户手机号列表
     at_mobiles = ['18825166XXX', '这里填@的人的手机号，可自定义@的位置，默认添加在消息末尾']
-    
+
     # 初始化机器人小丁
     # xiaoding = DingtalkChatbot(old_webhook)  # 旧版初始化方式
-    
+
     # 新版安全设置为“加签”时，需要传入请求密钥
     # 同时支持设置消息链接跳转方式，默认pc_slide=False为跳转到浏览器，pc_slide为在PC端侧边栏打开
     # 同时支持设置消息发送失败时提醒，默认fail_notice为false不提醒，开发者可以根据返回的消息发送结果自行判断和处理
     xiaoding = DingtalkChatbot(new_webhook, secret=secret, pc_slide=True, fail_notice=False)
-    
+
     # text
     xiaoding.send_text(msg='我就是小丁，小丁就是我！', is_at_all=True)
     xiaoding.send_text(msg='我就是小丁，小丁就是我！', at_mobiles=at_mobiles)
@@ -56,21 +62,21 @@ if __name__ == '__main__':
     # link
     xiaoding.send_link(title='万万没想到，某小璐竟然...',
                        text='故事是这样子的...',
-                       message_url='http://www.kwongwah.com.my/?p=454748', 
+                       message_url='http://www.kwongwah.com.my/?p=454748',
                        pic_url='https://pbs.twimg.com/media/CEwj7EDWgAE5eIF.jpg')
 
     # markdown
     # 1、提醒所有人
     xiaoding.send_markdown(title='氧气文字', text='#### 广州天气\n'
-                           '> 9度，西北风1级，空气良89，相对温度73%\n\n'
-                           '> ![美景](http://www.sinaimg.cn/dy/slidenews/5_img/2013_28/453_28488_469248.jpg)\n'
-                           '> ###### 10点20分发布 [天气](https://www.seniverse.com/) \n',
+                                              '> 9度，西北风1级，空气良89，相对温度73%\n\n'
+                                              '> ![美景](http://www.sinaimg.cn/dy/slidenews/5_img/2013_28/453_28488_469248.jpg)\n'
+                                              '> ###### 10点20分发布 [天气](https://www.seniverse.com/) \n',
                            is_at_all=True)
     # 2、提醒指定手机用户，并在text内容中自定义”@用户“的位置
     xiaoding.send_markdown(title='氧气文字', text='#### 广州天气 @18825166XXX\n'
-                           '> 9度，西北风1级，空气良89，相对温度73%\n\n'
-                           '> ![美景](http://www.sinaimg.cn/dy/slidenews/5_img/2013_28/453_28488_469248.jpg)\n'
-                           '> ###### 10点20分发布 [天气信息](https://www.seniverse.com/)\n',
+                                              '> 9度，西北风1级，空气良89，相对温度73%\n\n'
+                                              '> ![美景](http://www.sinaimg.cn/dy/slidenews/5_img/2013_28/453_28488_469248.jpg)\n'
+                                              '> ###### 10点20分发布 [天气信息](https://www.seniverse.com/)\n',
                            at_mobiles=at_mobiles, is_auto_at=False)
 
     # 整体跳转ActionCard

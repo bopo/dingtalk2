@@ -1,14 +1,8 @@
 #!/usr/bin/env python
-
-"""The setup script."""
-
 from setuptools import setup, find_packages
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
-
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
 
 requirements = ['Click>=7.0', ]
 
@@ -28,15 +22,10 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
-    description="Python Boilerplate contains all the boilerplate you need to create a Python package.",
-    entry_points={
-        'console_scripts': [
-            'dingtalk=dingtalk.__main__:main',
-        ],
-    },
+    description=".",
     install_requires=requirements,
     license="MIT license",
-    long_description=readme + '\n\n' + history,
+    long_description=readme + '\n\n',
     include_package_data=True,
     keywords='dingtalk',
     name='dingtalk',
