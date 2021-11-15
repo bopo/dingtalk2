@@ -1,5 +1,5 @@
-from dingtalk.logger import getLogger
-from dingtalk.utils import is_not_null_and_blank_str
+from .logger import getLogger
+from .utils import is_not_null_and_blank_str
 
 logger = getLogger()
 

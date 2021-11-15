@@ -6,10 +6,10 @@ import re
 import time
 from urllib.parse import quote_plus
 
-from dingtalk.items import ActionCard, FeedLink, CardItem
-from dingtalk.logger import getLogger
-from dingtalk.request import Request
-from dingtalk.utils import is_not_null_and_blank_str
+from .items import ActionCard, FeedLink, CardItem
+from .logger import getLogger
+from .request import Request
+from .utils import is_not_null_and_blank_str
 
 logger = getLogger()
 
