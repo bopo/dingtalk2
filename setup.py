@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -9,7 +10,7 @@ requirements = ['requests', ]
 test_requirements = ['pytest>=3', ]
 
 setup(
-    author="dingtalk",
+    author='dingtalk',
     author_email='ibopo@126.com',
     python_requires='>=3.6',
     classifiers=[
@@ -22,9 +23,9 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
-    description=".",
+    description='.',
     install_requires=requirements,
-    license="MIT license",
+    license='MIT license',
     long_description=readme + '\n\n',
     include_package_data=True,
     keywords='dingtalk',

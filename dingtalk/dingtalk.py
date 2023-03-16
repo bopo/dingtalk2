@@ -7,14 +7,16 @@ import re
 import time
 from urllib.parse import quote_plus
 
-from .items import ActionCard, FeedLink, CardItem
+from .items import ActionCard
+from .items import CardItem
+from .items import FeedLink
 from .request import Request
 from .utils import is_not_null_and_blank_str
 
 logger = logging.getLogger(__name__)
 
 
-class DingTalk(object):
+class DingTalk:
     """
     钉钉群自定义机器人（每个机器人每分钟最多发送20条），支持文本（text）、连接（link）、markdown三种消息类型！
     """
@@ -79,28 +81,28 @@ class DingTalk(object):
         :param auto_at: 是否自动在msg内容末尾添加@手机号，默认自动添加，可设置为False取消（可选）
         :return: 返回消息发送结果
         """
-        data = {"msgtype": "text", "at": {}}
+        data = {'msgtype': 'text', 'at': {}}
 
         if is_not_null_and_blank_str(msg):
-            data["text"] = {"content": msg}
+            data['text'] = {'content': msg}
         else:
-            logger.error("text类型，消息内容不能为空！")
-            raise ValueError("text类型，消息内容不能为空！")
+            logger.error('text类型，消息内容不能为空！')
+            raise ValueError('text类型，消息内容不能为空！')
 
         if at_all:
-            data["at"]["isAtAll"] = at_all
+            data['at']['isAtAll'] = at_all
 
         if at:
             at = list(map(str, at))
-            data["at"]["atMobiles"] = at
+            data['at']['atMobiles'] = at
 
             if auto_at:
                 mobiles_text = '\n@' + '@'.join(at)
-                data["text"]["content"] = msg + mobiles_text
+                data['text']['content'] = msg + mobiles_text
 
         if at_ids:
             at_ids = list(map(str, at_ids))
-            data["at"]["atDingtalkIds"] = at_ids
+            data['at']['atDingtalkIds'] = at_ids
 
         logger.debug(f'text类型：{data}')
 
@@ -112,12 +114,12 @@ class DingTalk(object):
         :return: 返回消息发送结果
         """
         if is_not_null_and_blank_str(pic_url):
-            data = {"msgtype": "image", "image": {"picURL": pic_url}}
+            data = {'msgtype': 'image', 'image': {'picURL': pic_url}}
             logger.debug('image类型：%s' % data)
             return self._request(data)
 
-        logger.error("image类型中图片链接不能为空！")
-        raise ValueError("image类型中图片链接不能为空！")
+        logger.error('image类型中图片链接不能为空！')
+        raise ValueError('image类型中图片链接不能为空！')
 
     def link(self, title, text, message_url, pic_url=''):
         """ link类型
@@ -130,20 +132,20 @@ class DingTalk(object):
         """
         if all(map(is_not_null_and_blank_str, [title, text, message_url])):
             data = {
-                "msgtype": "link",
-                "link": {
-                    "text": text,
-                    "title": title,
-                    "picUrl": pic_url,
-                    "messageUrl": self._open_type(message_url)
+                'msgtype': 'link',
+                'link': {
+                    'text': text,
+                    'title': title,
+                    'picUrl': pic_url,
+                    'messageUrl': self._open_type(message_url)
                 }
             }
 
             logger.debug('link类型：%s' % data)
             return self._request(data)
 
-        logger.error("link类型中消息标题或内容或链接不能为空！")
-        raise ValueError("link类型中消息标题或内容或链接不能为空！")
+        logger.error('link类型中消息标题或内容或链接不能为空！')
+        raise ValueError('link类型中消息标题或内容或链接不能为空！')
 
     def markdown(self, title, text, is_at_all=False, at_mobiles=None, at_dingtalk_ids=None, is_auto_at=True):
         """ markdown类型
@@ -164,28 +166,28 @@ class DingTalk(object):
         if all(map(is_not_null_and_blank_str, [title, text])):
             # 给 Markdown 文本消息中的跳转链接添加上跳转方式
             text = re.sub(r'(?<!!)\[.*?\]\((.*?)\)', lambda m: m.group(0).replace(m.group(1), self._open_type(m.group(1))), text)
-            data = {"msgtype": "markdown", "markdown": {"title": title, "text": text}, "at": {}}
+            data = {'msgtype': 'markdown', 'markdown': {'title': title, 'text': text}, 'at': {}}
 
             if is_at_all:
-                data["at"]["isAtAll"] = is_at_all
+                data['at']['isAtAll'] = is_at_all
 
             if at_mobiles:
                 at_mobiles = list(map(str, at_mobiles))
-                data["at"]["atMobiles"] = at_mobiles
+                data['at']['atMobiles'] = at_mobiles
 
                 if is_auto_at:
                     mobiles_text = '\n@' + '@'.join(at_mobiles)
-                    data["markdown"]["text"] = text + mobiles_text
+                    data['markdown']['text'] = text + mobiles_text
 
             if at_dingtalk_ids:
                 at_dingtalk_ids = list(map(str, at_dingtalk_ids))
-                data["at"]["atDingtalkIds"] = at_dingtalk_ids
+                data['at']['atDingtalkIds'] = at_dingtalk_ids
 
-            logger.debug("markdown类型：%s" % data)
+            logger.debug('markdown类型：%s' % data)
             return self._request(data)
 
-        logger.error("markdown类型中消息标题或内容不能为空！")
-        raise ValueError("markdown类型中消息标题或内容不能为空！")
+        logger.error('markdown类型中消息标题或内容不能为空！')
+        raise ValueError('markdown类型中消息标题或内容不能为空！')
 
     def action(self, action_card):
         """ ActionCard类型
@@ -195,17 +197,17 @@ class DingTalk(object):
         if isinstance(action_card, ActionCard):
             data = action_card.get_data()
 
-            if "singleURL" in data["actionCard"]:
-                data["actionCard"]["singleURL"] = self._open_type(data["actionCard"]["singleURL"])
-            elif "btns" in data["actionCard"]:
-                for btn in data["actionCard"]["btns"]:
-                    btn["actionURL"] = self._open_type(btn["actionURL"])
+            if 'singleURL' in data['actionCard']:
+                data['actionCard']['singleURL'] = self._open_type(data['actionCard']['singleURL'])
+            elif 'btns' in data['actionCard']:
+                for btn in data['actionCard']['btns']:
+                    btn['actionURL'] = self._open_type(btn['actionURL'])
 
-            logger.debug("ActionCard类型：%s" % data)
+            logger.debug('ActionCard类型：%s' % data)
             return self._request(data)
 
-        logger.error("ActionCard类型：传入的实例类型不正确，内容为：{}".format(str(action_card)))
-        raise TypeError("ActionCard类型：传入的实例类型不正确，内容为：{}".format(str(action_card)))
+        logger.error(f'ActionCard类型：传入的实例类型不正确，内容为：{str(action_card)}')
+        raise TypeError(f'ActionCard类型：传入的实例类型不正确，内容为：{str(action_card)}')
 
     def feed(self, links):
         """ FeedCard类型
@@ -213,8 +215,8 @@ class DingTalk(object):
         :return: 返回消息发送结果
         """
         if not isinstance(links, list):
-            logger.error("FeedLink类型：传入的数据格式不正确，内容为：{}".format(str(links)))
-            raise ValueError("FeedLink类型：传入的数据格式不正确，内容为：{}".format(str(links)))
+            logger.error(f'FeedLink类型：传入的数据格式不正确，内容为：{str(links)}')
+            raise ValueError(f'FeedLink类型：传入的数据格式不正确，内容为：{str(links)}')
 
         link_list = []
 
@@ -225,11 +227,11 @@ class DingTalk(object):
                 link['messageURL'] = self._open_type(link['messageURL'])
                 link_list.append(link)
             else:
-                logger.error("FeedLink类型，传入的数据格式不正确，内容为：{}".format(str(link)))
-                raise ValueError("FeedLink类型，传入的数据格式不正确，内容为：{}".format(str(link)))
+                logger.error(f'FeedLink类型，传入的数据格式不正确，内容为：{str(link)}')
+                raise ValueError(f'FeedLink类型，传入的数据格式不正确，内容为：{str(link)}')
 
-        data = {"msgtype": "feedCard", "feedCard": {"links": link_list}}
-        logger.debug("FeedCard类型：%s" % data)
+        data = {'msgtype': 'feedCard', 'feedCard': {'links': link_list}}
+        logger.debug('FeedCard类型：%s' % data)
 
         return self._request(data)
 
@@ -252,7 +254,7 @@ class DingTalk(object):
             elapse_time = now - self.queue.get()
             if elapse_time < 60:
                 sleep_time = int(60 - elapse_time) + 1
-                logger.debug('钉钉官方限制机器人每分钟最多发送20条，当前发送频率已达限制条件，休眠 {}s'.format(str(sleep_time)))
+                logger.debug(f'钉钉官方限制机器人每分钟最多发送20条，当前发送频率已达限制条件，休眠 {str(sleep_time)}s')
                 time.sleep(sleep_time)
 
         logger.debug(data)

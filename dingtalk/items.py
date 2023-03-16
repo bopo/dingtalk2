@@ -5,7 +5,7 @@ from .utils import is_not_null_and_blank_str
 logger = logging.getLogger(__name__)
 
 
-class ActionCard(object):
+class ActionCard:
     """
     ActionCard类型消息格式（整体跳转、独立跳转）
     """
@@ -38,36 +38,36 @@ class ActionCard(object):
             if len(self.btns) == 1:
                 # 整体跳转ActionCard类型
                 data = {
-                    "msgtype": "actionCard",
-                    "actionCard": {
-                        "title": self.title,
-                        "text": self.text,
-                        "hideAvatar": self.hide_avatar,
-                        "btnOrientation": self.btn_orientation,
-                        "singleTitle": self.btns[0]["title"],
-                        "singleURL": self.btns[0]["actionURL"]
+                    'msgtype': 'actionCard',
+                    'actionCard': {
+                        'title': self.title,
+                        'text': self.text,
+                        'hideAvatar': self.hide_avatar,
+                        'btnOrientation': self.btn_orientation,
+                        'singleTitle': self.btns[0]['title'],
+                        'singleURL': self.btns[0]['actionURL']
                     }
                 }
                 return data
             else:
                 # 独立跳转ActionCard类型
                 data = {
-                    "msgtype": "actionCard",
-                    "actionCard": {
-                        "title": self.title,
-                        "text": self.text,
-                        "hideAvatar": self.hide_avatar,
-                        "btnOrientation": self.btn_orientation,
-                        "btns": self.btns
+                    'msgtype': 'actionCard',
+                    'actionCard': {
+                        'title': self.title,
+                        'text': self.text,
+                        'hideAvatar': self.hide_avatar,
+                        'btnOrientation': self.btn_orientation,
+                        'btns': self.btns
                     }
                 }
                 return data
 
-        logger.error("ActionCard类型，消息标题或内容或按钮数量不能为空！")
-        raise ValueError("ActionCard类型，消息标题或内容或按钮数量不能为空！")
+        logger.error('ActionCard类型，消息标题或内容或按钮数量不能为空！')
+        raise ValueError('ActionCard类型，消息标题或内容或按钮数量不能为空！')
 
 
-class FeedLink(object):
+class FeedLink:
     """
     FeedCard类型单条消息格式
     """
@@ -79,7 +79,7 @@ class FeedLink(object):
         :param message_url: 点击单条信息后触发的URL
         :param pic_url: 点击单条消息后面图片触发的URL
         """
-        super(FeedLink, self).__init__()
+        super().__init__()
         self.title = title
         self.message_url = message_url
         self.pic_url = pic_url
@@ -91,17 +91,17 @@ class FeedLink(object):
         """
         if all(map(is_not_null_and_blank_str, [self.title, self.message_url, self.pic_url])):
             data = {
-                "title": self.title,
-                "messageURL": self.message_url,
-                "picURL": self.pic_url
+                'title': self.title,
+                'messageURL': self.message_url,
+                'picURL': self.pic_url
             }
             return data
 
-        logger.error("FeedCard类型单条消息文本、消息链接、图片链接不能为空！")
-        raise ValueError("FeedCard类型单条消息文本、消息链接、图片链接不能为空！")
+        logger.error('FeedCard类型单条消息文本、消息链接、图片链接不能为空！')
+        raise ValueError('FeedCard类型单条消息文本、消息链接、图片链接不能为空！')
 
 
-class CardItem(object):
+class CardItem:
     """
     ActionCard和FeedCard消息类型中的子控件
 
@@ -129,23 +129,23 @@ class CardItem(object):
         if all(map(is_not_null_and_blank_str, [self.title, self.url, self.pic_url])):
             # FeedCard类型
             data = {
-                "title": self.title,
-                "picURL": self.pic_url,
-                "messageURL": self.url,
+                'title': self.title,
+                'picURL': self.pic_url,
+                'messageURL': self.url,
             }
 
             return data
         elif all(map(is_not_null_and_blank_str, [self.title, self.url])):
             # ActionCard类型
             data = {
-                "title": self.title,
-                "actionURL": self.url,
+                'title': self.title,
+                'actionURL': self.url,
             }
 
             return data
 
-        logger.error("CardItem是ActionCard的子控件时，title、url不能为空；是FeedCard的子控件时，title、url、pic_url不能为空！")
-        raise ValueError("CardItem是ActionCard的子控件时，title、url不能为空；是FeedCard的子控件时，title、url、pic_url不能为空！")
+        logger.error('CardItem是ActionCard的子控件时，title、url不能为空；是FeedCard的子控件时，title、url、pic_url不能为空！')
+        raise ValueError('CardItem是ActionCard的子控件时，title、url不能为空；是FeedCard的子控件时，title、url、pic_url不能为空！')
 
 
 __all__ = ('ActionCard', 'FeedLink', 'CardItem')
