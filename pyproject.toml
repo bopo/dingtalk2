@@ -37,7 +37,7 @@ version = "0.1.0"
 tag_format = "v$version"
 
 update_changelog_on_bump = true
-changelog_file = "docs/HISTORY.md"
+changelog_file = "HISTORY.md"
 annotated_tag = true
 
 version_files = [

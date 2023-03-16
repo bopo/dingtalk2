@@ -68,3 +68,8 @@ dist: clean ## builds source and wheel package
 	#poetry run python setup.py bdist_wheel
 	poetry build
 	ls -lht dist
+
+bump:
+	cz bump --yes -ch -cc --increment patch
+
+# DO NOT DELETE
