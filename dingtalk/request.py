@@ -1,5 +1,8 @@
+import logging
+
 import requests
-from loguru import logger
+
+logger = logging.getLogger(__name__)
 
 
 class Request:
@@ -15,7 +18,6 @@ class Request:
     def post(self, payloads):
         return self.request(method='POST', data=payloads)
 
-    @logger.catch()
     def request(self, method='GET', data: dict = None):
 
         logger.warning(self.webhook)

@@ -1,17 +1,17 @@
 import base64
 import hashlib
 import hmac
+import logging
 import queue
 import re
 import time
 from urllib.parse import quote_plus
 
 from .items import ActionCard, FeedLink, CardItem
-from .logger import getLogger
 from .request import Request
 from .utils import is_not_null_and_blank_str
 
-logger = getLogger()
+logger = logging.getLogger(__name__)
 
 
 class DingTalk(object):
