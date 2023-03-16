@@ -44,5 +44,6 @@ version_files = [
     "dingtalk/__init__.py:__version__",
     "pyproject.toml:version",
     "Makefile:VERSION := ",
+    "setup.py:version=",
 ]
 
