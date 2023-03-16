@@ -37,7 +37,7 @@ class DingTalk(object):
         self.queue = queue.Queue(20)  # 钉钉官方限流每分钟发送20条信息
         self.secret = secret
 
-        self.webhook = f"https://oapi.dingtalk.com/robot/send?access_token={access}"
+        # self.webhook = f"https://oapi.dingtalk.com/robot/send?access_token={access}"
         self.options = {'access_token': access, }
 
         self.fail_notice = fail_notice
