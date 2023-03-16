@@ -64,8 +64,9 @@ release: dist ## package and upload a release
 	twine upload dist/*
 
 dist: clean ## builds source and wheel package
-	poetry run python setup.py sdist
-	poetry run python setup.py bdist_wheel
-	ls -l dist
+	#poetry run python setup.py sdist
+	#poetry run python setup.py bdist_wheel
+	poetry build
+	ls -lht dist
 
 
