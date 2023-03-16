@@ -1,4 +1,4 @@
-import httpx
+import requests
 from loguru import logger
 
 
@@ -7,7 +7,7 @@ class Request:
         self.webhook = webhook
         self.headers = headers
         self.options = options
-        self.session = httpx.Client()
+        self.session = requests.Session()
 
     def get(self, payloads=None):
         return self.request(method='GET', data=payloads)
@@ -25,18 +25,20 @@ class Request:
             response.raise_for_status()
             logger.warning(response.json())
             return response.json()
-        except httpx.HTTPStatusError as exc:
+        except requests.exceptions.HTTPError as exc:
             print(f"Error response {exc.response.status_code} while requesting {exc.request.url!r}.")
-            logger.error("消息发送失败， HTTP error: %d, reason: %s" % (exc.response.status_code, exc))
+            logger.error(f"消息发送失败， HTTP error: {exc.response.status_code:d}, reason: {exc}")
+            logger.exception(exc)
             return exc.response.json()
-        except httpx.RequestError as exc:
-            print(f"An error occurred while requesting {exc.request.url!r}.")
+        except requests.exceptions.ConnectTimeout:
+            logger.error("消息发送失败，Timeout error!")
             return None
-        except httpx.ConnectError as exc:
+        except requests.exceptions.ConnectionError as exc:
+            logger.exception(exc)
             logger.error("消息发送失败，HTTP connection error!")
             return None
-        except httpx.Timeout:
-            logger.error("消息发送失败，Timeout error!")
+        except requests.exceptions.RequestException as exc:
+            print(f"An error occurred while requesting {exc.request.url!r}.")
             return None
 
     @staticmethod
