@@ -45,3 +45,4 @@ version_files = [
     "pyproject.toml:version",
     "Makefile:VERSION := ",
 ]
+
