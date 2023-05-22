@@ -17,12 +17,11 @@ class Request:
         return self.request(method='POST', data=payloads)
 
     def request(self, method='GET', data: dict = None):
-        logger.warning(self.webhook)
+        logger.debug(self.webhook)
 
         try:
             response = self.session.request(method=method, url=self.webhook, headers=self.headers, json=data, params=self.options)
             response.raise_for_status()
-            logger.warning(response.json())
             return response.json()
         except requests.exceptions.HTTPError as exc:
             logger.warning(f'Error response {exc.response.status_code} while requesting {exc.request.url!r}.')

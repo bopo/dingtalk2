@@ -81,11 +81,10 @@ class DingTalk:
         """
         data = {'msgtype': 'text', 'at': {}}
 
-        if is_not_null_and_blank_str(msg):
-            data['text'] = {'content': msg}
-        else:
-            logger.error('text类型，消息内容不能为空！')
+        if not is_not_null_and_blank_str(msg):
             raise ValueError('text类型，消息内容不能为空！')
+
+        data['text'] = {'content': msg}
 
         if at_all:
             data['at']['isAtAll'] = at_all
@@ -116,7 +115,6 @@ class DingTalk:
             logger.debug('image类型：%s' % data)
             return self._request(data)
 
-        logger.error('image类型中图片链接不能为空！')
         raise ValueError('image类型中图片链接不能为空！')
 
     def link(self, title, text, message_url, pic_url=''):
@@ -142,7 +140,6 @@ class DingTalk:
             logger.debug('link类型：%s' % data)
             return self._request(data)
 
-        logger.error('link类型中消息标题或内容或链接不能为空！')
         raise ValueError('link类型中消息标题或内容或链接不能为空！')
 
     def markdown(self, title, text, is_at_all=False, at_mobiles=None, at_dingtalk_ids=None, is_auto_at=True):
@@ -184,7 +181,6 @@ class DingTalk:
             logger.debug('markdown类型：%s' % data)
             return self._request(data)
 
-        logger.error('markdown类型中消息标题或内容不能为空！')
         raise ValueError('markdown类型中消息标题或内容不能为空！')
 
     def action(self, action_card):
@@ -204,7 +200,6 @@ class DingTalk:
             logger.debug('ActionCard类型：%s' % data)
             return self._request(data)
 
-        logger.error(f'ActionCard类型：传入的实例类型不正确，内容为：{str(action_card)}')
         raise TypeError(f'ActionCard类型：传入的实例类型不正确，内容为：{str(action_card)}')
 
     def feed(self, links):
@@ -225,7 +220,6 @@ class DingTalk:
                 link['messageURL'] = self._open_type(link['messageURL'])
                 link_list.append(link)
             else:
-                logger.error(f'FeedLink类型，传入的数据格式不正确，内容为：{str(link)}')
                 raise ValueError(f'FeedLink类型，传入的数据格式不正确，内容为：{str(link)}')
 
         data = {'msgtype': 'feedCard', 'feedCard': {'links': link_list}}
@@ -254,8 +248,6 @@ class DingTalk:
                 sleep_time = int(60 - elapse_time) + 1
                 logger.debug(f'钉钉官方限制机器人每分钟最多发送20条，当前发送频率已达限制条件，休眠 {str(sleep_time)}s')
                 time.sleep(sleep_time)
-
-        logger.debug(data)
 
         return self.session.post(data)
 
