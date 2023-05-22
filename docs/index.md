@@ -1,17 +1,27 @@
-# Welcome to MkDocs
+# 项目概述
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+钉钉机器人的 Python 库
 
-## Commands
+- 在线文档: [https://dingtalk2.readthedocs.io](https://dingtalk2.readthedocs.io)
+- 国内镜像: [https://gitee.com/ibopo/dingtalk2](https://gitee.com/ibopo/dingtalk2)
+- 项目仓库: [https://github.com/bopo/dingtalk2](https://github.com/bopo/dingtalk2)
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+## 项目特点
 
-## Project layout
+- 基于 `pytdx` 二次封装。
+- 完全支持 `3.6+`
+- 支持全平台 `Windows / MacOS / Linux`
+- 更加友好的API接口
+- 自动匹配最优服务器
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+## 运行环境
+
+- 操作系统: `Windows / MacOS / Linux` 都可以运行.
+- Python: `3.8` 以及以上版本, 不支持`python2`.
+
+## 快速安装
+
+```shell
+pip install -U dingtalk2
+```
+
