@@ -193,7 +193,8 @@ class DingTalk:
 
             if 'singleURL' in data['actionCard']:
                 data['actionCard']['singleURL'] = self._open_type(data['actionCard']['singleURL'])
-            elif 'btns' in data['actionCard']:
+
+            if 'btns' in data['actionCard']:
                 for btn in data['actionCard']['btns']:
                     btn['actionURL'] = self._open_type(btn['actionURL'])
 
@@ -214,13 +215,13 @@ class DingTalk:
         link_list = []
 
         for link in links:
-            # 兼容：1、传入FeedLink实例列表；2、CardItem实例列表；
-            if isinstance(link, FeedLink) or isinstance(link, CardItem):
-                link = link.get_data()
-                link['messageURL'] = self._open_type(link['messageURL'])
-                link_list.append(link)
-            else:
+            if not isinstance(link, FeedLink) and not isinstance(link, CardItem):
                 raise ValueError(f'FeedLink类型，传入的数据格式不正确，内容为：{str(link)}')
+
+            # 兼容：1、传入FeedLink实例列表；2、CardItem实例列表；
+            link = link.get_data()
+            link['messageURL'] = self._open_type(link['messageURL'])
+            link_list.append(link)
 
         data = {'msgtype': 'feedCard', 'feedCard': {'links': link_list}}
         logger.debug('FeedCard类型：%s' % data)
@@ -235,7 +236,7 @@ class DingTalk:
         now = time.time()
 
         # 钉钉自定义机器人安全设置加签时，签名中的时间戳与请求时不能超过一个小时，所以每个1小时需要更新签名
-        if now - self.start_time >= 3600 and self.secret is not None and self.secret.startswith('SEC'):
+        if now - self.start_time >= 3600 and self.secret and self.secret.startswith('SEC'):
             self.start_time = now
             self._initialize()
 
