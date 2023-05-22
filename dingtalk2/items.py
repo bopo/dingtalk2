@@ -1,8 +1,5 @@
-import logging
-
+from .logger import logger
 from .utils import is_not_null_and_blank_str
-
-logger = logging.getLogger(__name__)
 
 
 class ActionCard:

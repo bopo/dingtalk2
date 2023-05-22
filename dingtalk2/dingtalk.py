@@ -1,7 +1,6 @@
 import base64
 import hashlib
 import hmac
-import logging
 import queue
 import re
 import time
@@ -10,10 +9,9 @@ from urllib.parse import quote_plus
 from .items import ActionCard
 from .items import CardItem
 from .items import FeedLink
+from .logger import logger
 from .request import Request
 from .utils import is_not_null_and_blank_str
-
-logger = logging.getLogger(__name__)
 
 
 class DingTalk:
@@ -165,7 +163,7 @@ class DingTalk:
 
         if all(map(is_not_null_and_blank_str, [title, text])):
             # 给 Markdown 文本消息中的跳转链接添加上跳转方式
-            text = re.sub(r'(?<!!)\[.*?\]\((.*?)\)', lambda m: m.group(0).replace(m.group(1), self._open_type(m.group(1))), text)
+            text = re.sub(r'(?<!!)\[.*?\]\((.*?)\)', lambda m: m.group(0).replace(m.group(1), self._open_type(m.group(1))), text)  # noqa
             data = {'msgtype': 'markdown', 'markdown': {'title': title, 'text': text}, 'at': {}}
 
             if is_at_all:
