@@ -22,26 +22,25 @@ endef
 export PRINT_HELP_PYSCRIPT
 
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
-VERSION := 0.1.3
+VERSION := 0.1.0
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
 clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
 
-clean-build: ## remove build artifacts
+clean-build:
 	rm -fr build/
 	rm -fr dist/
 	rm -fr .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +
 
-clean-pyc: ## remove Python file artifacts
-	find . -name '*.pyc' -exec rm -f {} +
+clean-pyc:
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
 
-clean-test: ## remove test and coverage artifacts
+clean-test:
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
@@ -50,26 +49,26 @@ clean-test: ## remove test and coverage artifacts
 test: ## run tests quickly with the default Python
 	poetry run pytest -v
 
-test-all: ## run tests on every Python version with tox
-	poetry export --without-hashes --without-urls -o requirements.txt
-	tox
-
-coverage: ## check code coverage quickly with the default Python
-	coverage run --source dingtalk -m pytest
-	coverage report -m
-	coverage html
-	$(BROWSER) htmlcov/index.html
-
-release: dist ## package and upload a release
-	twine upload dist/*
-
 dist: clean ## builds source and wheel package
 	#poetry run python setup.py sdist
 	#poetry run python setup.py bdist_wheel
 	poetry build
 	ls -lht dist
 
-bump:
-	cz bump --yes -ch -cc --increment patch
+hist: ## show commit incremental changelog
+	# https://commitizen-tools.github.io/commitizen/
+	#pip install commitizen -i https://pypi.tuna.tsinghua.edu.cn/simple
+	#cz bump --dry-run --increment patch
+	cz changelog 0.10.0..$(VERSION) --dry-run
+
+pypi: clean ## package and upload a release
+	cz bump --yes -ch -cc --increment patch --dry-run
+	poetry publish --build --skip-existing --dry-run
+
+bump: ## bump version.
+	# https://commitizen-tools.github.io/commitizen/
+	# https://keepachangelog.com/zh-CN/
+	#cz bump --dry-run --yes -ch -cc --increment {MAJOR,MINOR,PATCH}
+	@cz bump --yes -ch -cc --increment patch --dry-run
 
 # DO NOT DELETE
