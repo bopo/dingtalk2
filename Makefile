@@ -22,7 +22,7 @@ endef
 export PRINT_HELP_PYSCRIPT
 
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
-VERSION := 0.1.1
+VERSION := 0.1.2
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
@@ -69,6 +69,6 @@ bump: ## bump version.
 	# https://commitizen-tools.github.io/commitizen/
 	# https://keepachangelog.com/zh-CN/
 	#cz bump --dry-run --yes -ch -cc --increment {MAJOR,MINOR,PATCH}
-	@cz bump --yes -ch -cc --increment patch --dry-run
+	cz bump --yes -ch -cc --increment patch --dry-run
 
 # DO NOT DELETE

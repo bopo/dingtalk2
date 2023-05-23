@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dingtalk2"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
 authors = ["bopo <ibopo@126.com>"]
 readme = "README.md"
@@ -37,7 +37,7 @@ log_cli = 0
 log_cli_level = "DEBUG"
 
 [tool.commitizen]
-version = "0.1.1"
+version = "0.1.2"
 tag_format = "v$version"
 update_changelog_on_bump = true
 changelog_file = "docs/history.md"
