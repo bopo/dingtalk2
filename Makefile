@@ -59,7 +59,7 @@ hist: ## show commit incremental changelog
 	# https://commitizen-tools.github.io/commitizen/
 	#pip install commitizen -i https://pypi.tuna.tsinghua.edu.cn/simple
 	#cz bump --dry-run --increment patch
-	cz changelog 0.10.0..$(VERSION) --dry-run
+	cz ch --dry-run
 
 pypi: clean ## package and upload a release
 	cz bump --yes -ch -cc --increment patch --dry-run
