@@ -62,7 +62,7 @@ hist: ## show commit incremental changelog
 	cz ch --incremental --dry-run
 
 pypi: clean ## package and upload a release
-	cz bump --yes -ch -cc --increment patch --dry-run
+	#cz bump --yes -ch -cc --increment patch --dry-run
 	poetry publish --build --skip-existing --dry-run
 
 bump: ## bump version.
