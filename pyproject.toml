@@ -42,6 +42,7 @@ tag_format = "v$version"
 update_changelog_on_bump = true
 changelog_file = "docs/history.md"
 annotated_tag = true
+incremental = true
 version_files = [
     "dingtalk2/__init__.py:__version__",
     "pyproject.toml:version",

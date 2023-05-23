@@ -1,22 +1,50 @@
-# dingtalk
+# DingTalk2 介绍
 
 [![image](https://img.shields.io/pypi/v/dingtalk2.svg)](https://pypi.python.org/pypi/dingtalk2)
 [![image](https://img.shields.io/travis/bopo/dingtalk2.svg)](https://travis-ci.com/bopo/dingtalk2)
 [![Documentation Status](https://readthedocs.org/projects/dingtalk2/badge/?version=latest)](https://dingtalk2.readthedocs.io/en/latest/?version=latest)
 
-Python Boilerplate contains all the boilerplate you need to create a
-Python package.
+钉钉支持 Webhook 模式接入事件推送、机器人收消息以及卡片回调等
 
--   Free software: MIT license
--   Documentation: <https://dingtalk2.readthedocs.io>.
+-   开源协议: MIT license
+-   使用文档: <https://dingtalk2.readthedocs.io>.
 
-## Features
+## 快速开始
 
--   TODO
+### 准备工作
 
-## Credits
+* Python3 开发环境，https://www.python.org/
+* 钉钉机器人的 token
 
-This package was created with
-[Cookiecutter](https://github.com/audreyr/cookiecutter) and the
-[audreyr/cookiecutter-pypackage](https://github.com/audreyr/cookiecutter-pypackage)
-project template.
+### 快速开始指南
+
+1、安装 dingtalk2
+
+```Shell
+python -m pip install dingtalk2
+```
+
+2、使用 dingtalk2
+
+```python
+from dingtalk2 import dingtalk
+
+access = '6eab6a1161ea33c2693aae53fe92c298469f685aed8261ffdfd15d2bcfcxxxxxxx'
+secret = 'SEC0ed50da84fca5e37491b032a660dcfd2fd6aef8e2dcb74caa39ddxxxxxxxxxx'
+
+client = dingtalk.DingTalk(access=access, secret=secret)
+
+client.text("hello")
+client.image(pic_url='http://uc-test-manage-00.umlife.net/jenkins/pic/flake8.png')
+
+```
+
+
+### 技术支持
+
+可以搜索共创群，答疑交流。
+
+共创群ID：xxx （钉钉搜索群号入群）；
+
+也可以扫码入群：
+
