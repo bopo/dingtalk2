@@ -1,11 +1,9 @@
-import logging
+import sys
 
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+from loguru import logger
 
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-console.setFormatter(formatter)
+LOGGER_FORMAT = '<green>{time:YYYY-MM-DD HH:mm:ss}</green> [ <level>{level: <8}</level> ] <level>{message}</level>'
+# LOGGER_FORMAT = '[ <level>{level: <8}</level> ] <level>{message}</level>'
 
-logger = logging.getLogger('dingtalk2')
-logger.addHandler(console)
-logger.setLevel(logging.INFO)
+logger.remove(0)
+logger.add(sys.stdout, level='INFO', format=LOGGER_FORMAT, filter='dingtalk2')

@@ -69,16 +69,6 @@ repos:
 exclude: |
   (?x)^(
     docs\/.*|
-    .*migrations\/.*|
-    sample\/.*|
     notebooks\/.*|
-    \.ipynb_checkpoints|
-    setup\.cfg|
-    fabfile\.py|
-    .*?proto.*|
-    .*?\.yaml|
-    .*?\.yml|
-    .*?\.dat|
-    .*?\.txt|
-    .*?\.md
+    .*?\.txt
   )

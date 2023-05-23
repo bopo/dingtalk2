@@ -6,6 +6,7 @@ import re
 import time
 from urllib.parse import quote_plus
 
+from .constants import HEADERS, GATEWAY
 from .items import ActionCard
 from .items import CardItem
 from .items import FeedLink
@@ -19,13 +20,13 @@ class DingTalk:
     钉钉群自定义机器人（每个机器人每分钟最多发送20条），支持文本（text）、连接（link）、markdown三种消息类型！
     """
 
-    gateway = 'https://oapi.dingtalk.com/robot/send'
-    headers = {'Content-Type': 'application/json; charset=utf-8'}
-    options = {}
-    webhook = ''
+    # gateway = 'https://oapi.dingtalk.com/robot/send'
+    # headers = {'Content-Type': 'application/json; charset=utf-8'}
+    # options = {}
+    # webhook = ''
     session: Request
 
-    def __init__(self, access: str = '', secret=None, pc_slide=False, fail_notice=False):
+    def __init__(self, access: str = None, secret: str = None, pc_slide=False, fail_notice=False):
         """
         机器人初始化
         :param access: 钉钉群自定义机器人webhook地址
@@ -38,16 +39,16 @@ class DingTalk:
         self.secret = secret
 
         # self.webhook = f"https://oapi.dingtalk.com/robot/send?access_token={access}"
-        self.options = {'access_token': access, }
+        self.options = {'access_token': access}
 
         self.fail_notice = fail_notice
         self.start_time = time.time()
         self.pc_slide = pc_slide
 
         # 初始化参数
-        self._initialize()
+        self._signature()
 
-    def _initialize(self):
+    def _signature(self):
         """ 钉钉群自定义机器人安全设置加签时，签名中的时间戳与请求时不能超过一个小时，所以每个1小时需要更新签名 """
         if self.secret and self.secret.startswith('SEC'):
             timestamp = round(self.start_time * 1000)
@@ -58,14 +59,14 @@ class DingTalk:
 
             self.options.update({'timestamp': timestamp, 'sign': sign})
 
-        self.session = Request(webhook=self.gateway, headers=self.headers, options=self.options)
+        self.session = Request(webhook=GATEWAY, headers=HEADERS, options=self.options)
 
     def _open_type(self, url):
         """ 消息链接的打开方式
         1、默认或不设置时，为浏览器打开：pc_slide=False
         2、在PC端侧边栏打开：pc_slide=True
         """
-        slide = 'true' if self.pc_slide else 'false'
+        slide = ('false', 'true')[bool(self.pc_slide)]
 
         return f'dingtalk://dingtalkclient/page/link?url={quote_plus(url)}&pc_slide={slide}'
 
@@ -79,31 +80,31 @@ class DingTalk:
         :param auto_at: 是否自动在msg内容末尾添加@手机号，默认自动添加，可设置为False取消（可选）
         :return: 返回消息发送结果
         """
-        data = {'msgtype': 'text', 'at': {}}
+        payload = {'msgtype': 'text', 'at': {}}
 
         if not is_not_null_and_blank_str(msg):
             raise ValueError('text类型，消息内容不能为空！')
 
-        data['text'] = {'content': msg}
+        payload['text'] = {'content': msg}
 
         if at_all:
-            data['at']['isAtAll'] = at_all
+            payload['at']['isAtAll'] = at_all
 
         if at:
             at = list(map(str, at))
-            data['at']['atMobiles'] = at
+            payload['at']['atMobiles'] = at
 
             if auto_at:
                 mobiles_text = '\n@' + '@'.join(at)
-                data['text']['content'] = msg + mobiles_text
+                payload['text']['content'] = msg + mobiles_text
 
         if at_ids:
             at_ids = list(map(str, at_ids))
-            data['at']['atDingtalkIds'] = at_ids
+            payload['at']['atDingtalkIds'] = at_ids
 
-        logger.debug(f'text类型：{data}')
+        logger.debug(f'text类型：{payload}')
 
-        return self._request(data)
+        return self._request(payload)
 
     def image(self, pic_url):
         """ image类型（表情）
@@ -112,7 +113,7 @@ class DingTalk:
         """
         if is_not_null_and_blank_str(pic_url):
             data = {'msgtype': 'image', 'image': {'picURL': pic_url}}
-            logger.debug('image类型：%s' % data)
+            logger.debug(f'image类型：{data}')
             return self._request(data)
 
         raise ValueError('image类型中图片链接不能为空！')
@@ -127,7 +128,7 @@ class DingTalk:
 
         """
         if all(map(is_not_null_and_blank_str, [title, text, message_url])):
-            data = {
+            payload = {
                 'msgtype': 'link',
                 'link': {
                     'text': text,
@@ -137,8 +138,8 @@ class DingTalk:
                 }
             }
 
-            logger.debug('link类型：%s' % data)
-            return self._request(data)
+            logger.debug(f'link类型：{payload}')
+            return self._request(payload)
 
         raise ValueError('link类型中消息标题或内容或链接不能为空！')
 
@@ -160,26 +161,28 @@ class DingTalk:
 
         if all(map(is_not_null_and_blank_str, [title, text])):
             # 给 Markdown 文本消息中的跳转链接添加上跳转方式
-            text = re.sub(r'(?<!!)\[.*?\]\((.*?)\)', lambda m: m.group(0).replace(m.group(1), self._open_type(m.group(1))), text)  # noqa
-            data = {'msgtype': 'markdown', 'markdown': {'title': title, 'text': text}, 'at': {}}
+            func = lambda m: m.group(0).replace(m.group(1), self._open_type(m.group(1)))  # noqa
+            text = re.sub(r'(?<!!)\[.*?\]\((.*?)\)', func, text)  # noqa
+
+            payload = {'msgtype': 'markdown', 'markdown': {'title': title, 'text': text}, 'at': {}}
 
             if is_at_all:
-                data['at']['isAtAll'] = is_at_all
+                payload['at']['isAtAll'] = is_at_all
 
             if at_mobiles:
                 at_mobiles = list(map(str, at_mobiles))
-                data['at']['atMobiles'] = at_mobiles
+                payload['at']['atMobiles'] = at_mobiles
 
                 if is_auto_at:
                     mobiles_text = '\n@' + '@'.join(at_mobiles)
-                    data['markdown']['text'] = text + mobiles_text
+                    payload['markdown']['text'] = text + mobiles_text
 
             if at_dingtalk_ids:
                 at_dingtalk_ids = list(map(str, at_dingtalk_ids))
-                data['at']['atDingtalkIds'] = at_dingtalk_ids
+                payload['at']['atDingtalkIds'] = at_dingtalk_ids
 
-            logger.debug('markdown类型：%s' % data)
-            return self._request(data)
+            logger.debug(f'markdown类型：{payload}')
+            return self._request(payload)
 
         raise ValueError('markdown类型中消息标题或内容不能为空！')
 
@@ -189,17 +192,17 @@ class DingTalk:
         :return: 返回消息发送结果
         """
         if isinstance(action_card, ActionCard):
-            data = action_card.get_data()
+            payload = action_card.get_data()
 
-            if 'singleURL' in data['actionCard']:
-                data['actionCard']['singleURL'] = self._open_type(data['actionCard']['singleURL'])
+            if 'singleURL' in payload['actionCard']:
+                payload['actionCard']['singleURL'] = self._open_type(payload['actionCard']['singleURL'])
 
-            if 'btns' in data['actionCard']:
-                for btn in data['actionCard']['btns']:
+            if 'btns' in payload['actionCard']:
+                for btn in payload['actionCard']['btns']:
                     btn['actionURL'] = self._open_type(btn['actionURL'])
 
-            logger.debug('ActionCard类型：%s' % data)
-            return self._request(data)
+            logger.debug('ActionCard类型：%s' % payload)
+            return self._request(payload)
 
         raise TypeError(f'ActionCard类型：传入的实例类型不正确，内容为：{str(action_card)}')
 
@@ -223,14 +226,14 @@ class DingTalk:
             link['messageURL'] = self._open_type(link['messageURL'])
             link_list.append(link)
 
-        data = {'msgtype': 'feedCard', 'feedCard': {'links': link_list}}
-        logger.debug('FeedCard类型：%s' % data)
+        payload = {'msgtype': 'feedCard', 'feedCard': {'links': link_list}}
+        logger.debug(f'FeedCard类型：{payload}')
 
-        return self._request(data)
+        return self._request(payload)
 
-    def _request(self, data: dict) -> dict:
+    def _request(self, payload: dict) -> dict:
         """ 发送消息（内容UTF-8编码）
-        :param data: 消息数据（字典）
+        :param payload: 消息数据（字典）
         :return: 返回消息发送结果
         """
         now = time.time()
@@ -238,7 +241,7 @@ class DingTalk:
         # 钉钉自定义机器人安全设置加签时，签名中的时间戳与请求时不能超过一个小时，所以每个1小时需要更新签名
         if now - self.start_time >= 3600 and self.secret and self.secret.startswith('SEC'):
             self.start_time = now
-            self._initialize()
+            self._signature()
 
         # 钉钉自定义机器人现在每分钟最多发送20条消息
         self.queue.put(now)
@@ -250,7 +253,7 @@ class DingTalk:
                 logger.debug(f'钉钉官方限制机器人每分钟最多发送20条，当前发送频率已达限制条件，休眠 {str(sleep_time)}s')
                 time.sleep(sleep_time)
 
-        return self.session.post(data)
+        return self.session.post(payload)
 
     def send(self, action='text', **kwargs):
         """

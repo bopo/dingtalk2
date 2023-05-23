@@ -1,0 +1,40 @@
+interactions:
+- request:
+    body: '{"msgtype": "image", "image": {"picURL": "http://uc-test-manage-00.umlife.net/jenkins/pic/flake8.png"}}'
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '103'
+      content-type:
+      - application/json; charset=utf-8
+      host:
+      - oapi.dingtalk.com
+      user-agent:
+      - python-httpx/0.24.0
+    method: POST
+    uri: https://oapi.dingtalk.com/robot/send?access_token=6eab6a1161ea33c2693aae53fe92c298469f685aed8261ffdfd15d2bcfc5ed89&timestamp=1684808887395&sign=LmvPIB%2B17m20usEGK24KNBxHf2%2Bsmc%2Ble0JDVRNsCfA%3D
+  response:
+    content: '{"errcode":0,"errmsg":"ok"}'
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 23 May 2023 02:28:08 GMT
+      Server:
+      - DingTalk/1.0.0
+      Transfer-Encoding:
+      - chunked
+    http_version: HTTP/1.1
+    status_code: 200
+version: 1

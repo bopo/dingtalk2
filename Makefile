@@ -47,7 +47,7 @@ clean-test:
 	rm -fr .pytest_cache
 
 test: ## run tests quickly with the default Python
-	poetry run pytest -v
+	poetry run pytest
 
 dist: clean ## builds source and wheel package
 	#poetry run python setup.py sdist

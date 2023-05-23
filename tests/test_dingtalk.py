@@ -1,22 +1,24 @@
+import vcr
+
 from dingtalk2.items import ActionCard
 from dingtalk2.items import CardItem
 
 
-# @vcr.use_cassette('tests/fixtures/vcr/test_text.yaml')
+@vcr.use_cassette('tests/fixtures/vcr/test_text.yaml', match_on=['method', 'body'], record_mode='once')
 def test_text(client):
     """测试发送文本消息函数"""
     result = client.text(msg='我就是小丁，小丁就是我！', at_all=True)
     assert result['errcode'] == 0, result
 
 
-# @vcr.use_cassette('tests/fixtures/vcr/test_image.yaml')
+@vcr.use_cassette('tests/fixtures/vcr/test_image.yaml', match_on=['method', 'body'], record_mode='once')
 def test_image(client):
     """测试发送表情图片消息函数"""
     result = client.image(pic_url='http://uc-test-manage-00.umlife.net/jenkins/pic/flake8.png')
     assert (result['errcode'] == 0)
 
 
-# @vcr.use_cassette('tests/fixtures/vcr/test_link.yaml')
+@vcr.use_cassette('tests/fixtures/vcr/test_link.yaml', match_on=['method', 'body'], record_mode='once')
 def test_link(client):
     """测试发送链接消息函数"""
     result = client.link(
@@ -29,7 +31,7 @@ def test_link(client):
     assert (result['errcode'] == 0)
 
 
-# @vcr.use_cassette('tests/fixtures/vcr/test_markdown.yaml')
+@vcr.use_cassette('tests/fixtures/vcr/test_markdown.yaml', match_on=['method', 'body'], record_mode='once')
 def test_markdown(client):
     """测试发送Markdown格式消息函数"""
     result = client.markdown(
@@ -43,7 +45,7 @@ def test_markdown(client):
     assert (result['errcode'] == 0)
 
 
-# @vcr.use_cassette('tests/fixtures/vcr/test_action_card.yaml')
+@vcr.use_cassette('tests/fixtures/vcr/test_action_card.yaml', match_on=['method', 'body'], record_mode='once')
 def test_action_card(client):
     """测试发送整体跳转ActionCard消息功能（CardItem新API)"""
     btns1 = [CardItem(title='查看详情', url='https://www.dingtalk.com/')]
@@ -79,7 +81,7 @@ def test_action_card(client):
     assert (result['errcode'] == 0)
 
 
-# @vcr.use_cassette('tests/fixtures/vcr/test_action_card_old_api.yaml')
+@vcr.use_cassette('tests/fixtures/vcr/test_action_card_old_api.yaml', match_on=['method', 'body'], record_mode='once')
 def test_action_card_old_api(client):
     """测试发送整体跳转ActionCard消息功能（数据列表btns旧API)"""
     btns1 = [{'title': '查看详情', 'actionURL': 'https://www.dingtalk.com/'}]

@@ -1,0 +1,44 @@
+interactions:
+- request:
+    body: '{"msgtype": "markdown", "markdown": {"title": "\u6c27\u6c14\u6587\u5b57",
+      "text": "#### \u5e7f\u5dde\u5929\u6c14\n> 9\u5ea6\uff0c\u897f\u5317\u98ce1\u7ea7\uff0c\u7a7a\u6c14\u826f89\uff0c\u76f8\u5bf9\u6e29\u5ea673%\n\n>
+      ![\u7f8e\u666f](http://www.sinaimg.cn/dy/slidenews/5_img/2013_28/453_28488_469248.jpg)\n>
+      ###### 10\u70b920\u5206\u53d1\u5e03 [\u5929\u6c14](dingtalk://dingtalkclient/page/link?url=http%3A%2F%2Fwww.thinkpage.cn%2F&pc_slide=false)
+      \n"}, "at": {"isAtAll": true}}'
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '479'
+      content-type:
+      - application/json; charset=utf-8
+      host:
+      - oapi.dingtalk.com
+      user-agent:
+      - python-httpx/0.24.0
+    method: POST
+    uri: https://oapi.dingtalk.com/robot/send?access_token=6eab6a1161ea33c2693aae53fe92c298469f685aed8261ffdfd15d2bcfc5ed89&timestamp=1684808887395&sign=LmvPIB%2B17m20usEGK24KNBxHf2%2Bsmc%2Ble0JDVRNsCfA%3D
+  response:
+    content: '{"errcode":0,"errmsg":"ok"}'
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 23 May 2023 02:28:09 GMT
+      Server:
+      - DingTalk/1.0.0
+      Transfer-Encoding:
+      - chunked
+    http_version: HTTP/1.1
+    status_code: 200
+version: 1

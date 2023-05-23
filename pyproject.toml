@@ -7,18 +7,27 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-requests = "^2.28.2"
+httpx = "^0.24.0"
+asyncio = "^3.4.3"
+loguru = "^0.7.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest-cov = "^4.0.0"
+fabric3 = "^1.14.post1"
+gitpython = "^3.1.31"
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.4.3"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.3.1"
+vcrpy = "^4.2.1"
 
 [[tool.poetry.source]]
 name = "mirrors"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 default = true
 secondary = false
-
-
-[tool.poetry.group.dev.dependencies]
-pytest-cov = "^4.0.0"
-
 
 [tool.pytest.ini_options]
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
@@ -30,11 +39,9 @@ log_cli_level = "DEBUG"
 [tool.commitizen]
 version = "0.1.1"
 tag_format = "v$version"
-
 update_changelog_on_bump = true
 changelog_file = "docs/history.md"
 annotated_tag = true
-
 version_files = [
     "dingtalk2/__init__.py:__version__",
     "pyproject.toml:version",

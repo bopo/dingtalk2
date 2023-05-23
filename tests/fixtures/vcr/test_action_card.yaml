@@ -1,0 +1,85 @@
+interactions:
+- request:
+    body: '{"msgtype": "actionCard", "actionCard": {"title": "\u4e07\u4e07\u6ca1\u60f3\u5230\uff0c\u7adf\u7136...",
+      "text": "![markdown](http://www.songshan.es/wp-content/uploads/2016/01/Yin-Yang.png)
+      \n### \u6545\u4e8b\u662f\u8fd9\u6837\u5b50\u7684...", "hideAvatar": 1, "btnOrientation":
+      1, "singleTitle": "\u67e5\u770b\u8be6\u60c5", "singleURL": "dingtalk://dingtalkclient/page/link?url=https%3A%2F%2Fwww.dingtalk.com%2F&pc_slide=false"}}'
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '430'
+      content-type:
+      - application/json; charset=utf-8
+      host:
+      - oapi.dingtalk.com
+      user-agent:
+      - python-httpx/0.24.0
+    method: POST
+    uri: https://oapi.dingtalk.com/robot/send?access_token=6eab6a1161ea33c2693aae53fe92c298469f685aed8261ffdfd15d2bcfc5ed89&timestamp=1684808887395&sign=LmvPIB%2B17m20usEGK24KNBxHf2%2Bsmc%2Ble0JDVRNsCfA%3D
+  response:
+    content: '{"errcode":0,"errmsg":"ok"}'
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 23 May 2023 02:28:09 GMT
+      Server:
+      - DingTalk/1.0.0
+      Transfer-Encoding:
+      - chunked
+    http_version: HTTP/1.1
+    status_code: 200
+- request:
+    body: '{"msgtype": "actionCard", "actionCard": {"title": "\u4e07\u4e07\u6ca1\u60f3\u5230\uff0c\u7adf\u7136...",
+      "text": "![markdown](http://www.songshan.es/wp-content/uploads/2016/01/Yin-Yang.png)
+      \n### \u6545\u4e8b\u662f\u8fd9\u6837\u5b50\u7684...", "hideAvatar": 1, "btnOrientation":
+      1, "btns": [{"title": "\u652f\u6301", "actionURL": "dingtalk://dingtalkclient/page/link?url=https%3A%2F%2Fwww.dingtalk.com%2F&pc_slide=false"},
+      {"title": "\u53cd\u5bf9", "actionURL": "dingtalk://dingtalkclient/page/link?url=http%3A%2F%2Fwww.back+china.com%2Fnews%2F2018%2F01%2F11%2F537468.html&pc_slide=false"}]}}'
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '592'
+      content-type:
+      - application/json; charset=utf-8
+      host:
+      - oapi.dingtalk.com
+      user-agent:
+      - python-httpx/0.24.0
+    method: POST
+    uri: https://oapi.dingtalk.com/robot/send?access_token=6eab6a1161ea33c2693aae53fe92c298469f685aed8261ffdfd15d2bcfc5ed89&timestamp=1684808887395&sign=LmvPIB%2B17m20usEGK24KNBxHf2%2Bsmc%2Ble0JDVRNsCfA%3D
+  response:
+    content: '{"errcode":0,"errmsg":"ok"}'
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 23 May 2023 02:28:09 GMT
+      Server:
+      - DingTalk/1.0.0
+      Transfer-Encoding:
+      - chunked
+    http_version: HTTP/1.1
+    status_code: 200
+version: 1
